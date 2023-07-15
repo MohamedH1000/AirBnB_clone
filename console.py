@@ -185,8 +185,8 @@ class HBNBCommand(cmd.Cmd):
         args = re.match(r"^(\w+)\.(\w+)\((.*)\)", line)
         if args:
             args = args.groups()
-        if not args or len(args) < 2 or args[0] not in names
-        or args[1] not in commands.keys():
+        if not args or len(args) < 2 or args[0] not in names \
+                or args[1] not in commands.keys():
             super.default(line)
 
         if args[1] in ["all", "count"]:
