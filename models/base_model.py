@@ -1,47 +1,67 @@
 #!/usr/bin/python3
-'''
-the model base class to be defined
-'''
-import uuid
-import models
 from datetime import datetime
+from uuid import uuid4
+import models
+
+"""
+the base for all classes in the airbnb project
+"""
 
 
-class BaseModel:
-    """a base in this project for all classes"""
+class BaseModel():
+    """
+    basic class for all other classes
+    """
 
     def __init__(self, *args, **kwargs):
-        """an initialization of a public instance
-         attribution"""
+        """
+        attributes to be initialized
+        """
+        date_format = '%Y-%m-%dT%H:%M:%S.%f'
         if kwargs:
             for a, value in kwargs.items():
-                if a == "created_at":
-                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
-                if a == "updated_at":
-                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
-                if a != "__class__":
+                if "created_at" == a:
+                    self.created_at = datetime.strptime(kwargs["created_at"],
+                                                        date_format)
+                elif "updated_at" == a:
+                    self.updated_at = datetime.strptime(kwargs["updated_at"],
+                                                        date_format)
+                elif "__class__" == a:
+                    pass
+                else:
                     setattr(self, a, value)
         else:
-            self.id = str(uuid.uuid4())
+            self.id = str(uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
             models.storage.new(self)
 
     def __str__(self):
-        """a representaion string of this class
-        to be returned"""
-        nameClass = self.__class__.__name__
-        return "[{}] ({}) {}".format(nameClass, self.id, self.__dict__)
+        """
+        return str
+        """
+        return ('[{}] ({}) {}'.
+                format(self.__class__.__name__, self.id, self.__dict__))
+
+    def __repr__(self):
+        """
+        repr string to be returned
+        """
+        return (self.__str__())
 
     def save(self):
-        """public instance attributes to be updates"""
+        """
+        save to serialize file
+        """
         self.updated_at = datetime.now()
         models.storage.save()
 
     def to_dict(self):
-        """__dict__ instance key/values to be returned"""
-        copy_of_dict = self.__dict__.copy()
-        copy_of_dict["created_at"] = self.created_at.isoformat()
-        copy_of_dict["updated_at"] = self.updated_at.isoformat()
-        copy_of_dict['__class__'] = self.__class__.__name__
-        return copy_of_dict
+        """
+        return dictionary
+        """
+        diction = self.__dict__.copy()
+        diction["created_at"] = self.created_at.isoformat()
+        diction["updated_at"] = self.updated_at.isoformat()
+        diction["__class__"] = self.__class__.__name__
+        return diction
