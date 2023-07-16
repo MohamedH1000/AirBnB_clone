@@ -2,9 +2,9 @@
 '''
 the model base class to be defined
 '''
+import uuid
 import models
 from datetime import datetime
-from uuid import uuid4
 
 
 class BaseModel:
@@ -15,39 +15,35 @@ class BaseModel:
          attribution"""
 
         FORMAT_DATA_TIME = '%Y-%m-%dT%H:%M:%S.%f'
-        if not kwargs:
-            self.id = str(uuid4())
-            self.created_at = datetime.utcnow()
-            self.updated_at = datetime.utcnow()
-            models.storage.new(self)
+        if kwargs:
+            for a, value in kwargs.items():
+                if a == "created_at":
+                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+                if a == "updated_at":
+                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+                if a != "__class__":
+                    setattr(self, a, value)
         else:
-            for key, value in kwargs.items():
-                if key in ("updated_at", "created_at"):
-                    self.__dict__[key] = datetime.strptime(
-                        value, FORMAT_DATA_TIME)
-                elif key[0] == "id":
-                    self.__dict__[key] = str(value)
-                else:
-                    self.__dict__[key] = value
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+            models.storage.new(self)
 
     def __str__(self):
         """a representaion string of this class
         to be returned"""
-        return "[{}] ({}) {}".format(self.__class__.__name__,
-                                     self.id, self.__dict__)
+        nameClass = self.__class__.__name__
+        return "[{}] ({}) {}".format(nameClass, self.id, self.__dict__)
 
     def save(self):
         """public instance attributes to be updates"""
-        self.updated_at = datetime.utcnow()
-        models.storage.save
+        self.updated_at = datetime.now()
+        models.storage.save()
 
     def to_dict(self):
         """__dict__ instance key/values to be returned"""
-        object_of_a_map = {}
-        for key, value in self.__dict__.items():
-            if key == "created_at" or key == "updated_at":
-                object_of_a_map[key] = value.isoformat()
-            else:
-                object_of_a_map[key] = value
-        object_of_a_map["__class__"] = self.__class__.__name__
-        return object_of_a_map
+        copy_of_dict = self.__dict__.copy()
+        copy_of_dict["created_at"] = self.created_at.isoformat()
+        copy_of_dict["updated_at"] = self.updated_at.isoformat()
+        copy_of_dict['__class__'] = self.__class__.__name__
+        return copy_of_dict
