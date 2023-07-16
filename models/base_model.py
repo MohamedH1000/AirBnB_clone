@@ -13,8 +13,6 @@ class BaseModel:
     def __init__(self, *args, **kwargs):
         """an initialization of a public instance
          attribution"""
-
-        FORMAT_DATA_TIME = '%Y-%m-%dT%H:%M:%S.%f'
         if kwargs:
             for a, value in kwargs.items():
                 if a == "created_at":
