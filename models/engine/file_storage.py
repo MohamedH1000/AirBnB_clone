@@ -4,6 +4,11 @@ by this module file storage"""
 
 from models.base_model import BaseModel
 from models.user import User
+from models.amenity import Amenity
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
 import json
 
 
@@ -18,26 +23,29 @@ class FileStorage:
         to be returned"""
         return self.__objects
 
-    def new(self, object):
+    def new(self, obj):
         """in object the object with ket to be set"""
-        self.__objects[object.__class__.__name__ + '.' + str(object)] = object
+        key = obj.__class__.__name__ + '.' + str(obj.id)
+        self.__objects[key] = obj
 
     def save(self):
         """ objects to the json file
         to be serialized"""
-        with open(self.__file_path, 'w+') as File:
-            json.dump({k: v.to_dict() for k, v in self.__objects.items()
-                       }, File)
+        json_object = {}
+        for a in self.__objects:
+            json_object[a] = self.__objects[a].to_dict()
+
+        with open(self.__file_path, 'w') as File:
+            json.dump(json_object, File)
 
     def reload(self):
         """
         the json file to objects to be deserialized
         """
         try:
-            with open(self.__file_path, 'r') as File:
-                dict = json.loads(File.read())
-                for value in dict.values():
-                    cls = value["__class__"]
-                    self.new(eval(cls)(**value))
-        except Exception:
+            with open(self.__file_path, 'r', encoding='UTF8') as File:
+                for a, value in json.load(File).items():
+                    attributed_value = eval(value["__class__"])(**value)
+                    self.__objects[a] = attributed_value
+        except FileNotFoundError:
             pass
